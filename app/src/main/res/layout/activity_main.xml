@@ -5,6 +5,30 @@
     android:orientation="vertical"
     android:gravity="center">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:text="11111" />
+
+    <TextView
+        android:id="@+id/version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="version8" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
+    <TextView
+        android:id="@+id/textdevice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="textdevice" />
+
     <ListView
         android:id="@+id/epc_list"
         android:layout_width="match_parent"
