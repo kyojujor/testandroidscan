@@ -1,4 +1,4 @@
-package com.xxx.kyojujor.myuhfapplication;
+package com.jinqu.kyojujor.myuhfapplication;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,14 +7,17 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.jinqu.model.EPCmodel;
+import com.xxx.kyojujor.myuhfapplication.R;
+
 import java.util.List;
 
 public class LabelAdapter extends BaseAdapter {
 
-    private List<LabelModel> mData;
+    private List<EPCmodel> mData;
     private Context mContext;
 
-    public LabelAdapter(List<LabelModel> mData, Context mContext)
+    public LabelAdapter(List<EPCmodel> mData, Context mContext)
     {
         this.mData = mData;
         this.mContext = mContext;
@@ -45,8 +48,8 @@ public class LabelAdapter extends BaseAdapter {
         TextView txt_epcname = (TextView) convertView.findViewById(R.id.epcname);
         TextView txt_count = (TextView) convertView.findViewById(R.id.count);
 
-        txt_epcname.setText(mData.get(position).getEpcName());
-        txt_count.setText(mData.get(position).getCount());
+        txt_epcname.setText(mData.get(position).getEpc());
+        txt_count.setText(mData.get(position).getCount()+"");
         return convertView;
     }
 }

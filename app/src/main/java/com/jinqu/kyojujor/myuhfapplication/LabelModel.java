@@ -1,4 +1,4 @@
-package com.xxx.kyojujor.myuhfapplication;
+package com.jinqu.kyojujor.myuhfapplication;
 
 public class LabelModel {
     private String EpcName;

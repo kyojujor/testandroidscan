@@ -1,4 +1,4 @@
-package com.xxx.uhfreader;
+package com.jinqu.uhfreader;
 
 import com.magicrf.uhfreaderlib.reader.UhfReader;
 

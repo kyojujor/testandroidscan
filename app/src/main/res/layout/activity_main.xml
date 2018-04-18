@@ -1,39 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/all1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="38dp"
-        android:text="11111" />
-
-    <TextView
-        android:id="@+id/version"
+    android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/all2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="version8" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Button" />
+        <Button
+            android:id="@+id/btn_power"
+            android:layout_width="326dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="打开电源" />
 
-    <TextView
-        android:id="@+id/textdevice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="textdevice" />
+        <Spinner
+            android:id="@+id/spin_batch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
     <ListView
         android:id="@+id/epc_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <!-- 定义一个竖直方向的LinearLayout,把QQ呢称与说说的文本框设置出来 -->
-
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll">
     </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btn_startScan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开始扫描" />
+
+        <Button
+            android:id="@+id/btn_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:elevation="0dp"
+            android:text="清空列表" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="保存" />
+    </LinearLayout>
+
+
 </LinearLayout>
