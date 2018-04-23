@@ -16,24 +16,25 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/epcname"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
+            android:paddingStart="8dp"
+            android:text="xxxx"
             android:textColor="#1D1D1C"
+            android:layout_weight="9"
             android:textSize="20sp" />
 
         <TextView
             android:id="@+id/count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="8px"
+            android:text="111111"
             android:textColor="#B4B4B9"
-            android:textSize="14sp" />
-
+            android:layout_weight="1"
+            android:textSize="16sp" />
     </LinearLayout>
-
 </LinearLayout>

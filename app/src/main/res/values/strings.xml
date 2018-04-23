@@ -1,3 +1,5 @@
 <resources>
+    <string name="url">http://192.168.199.186:8002</string>
     <string name="app_name">进取租赁扫描</string>
+    <string name="app_te">12233</string>
 </resources>
