@@ -8,6 +8,8 @@ public class BatchModel {
 
     private String companyname;
 
+    private int hasScanCount;
+
     public String getBatch() {
         return batch;
     }
@@ -30,5 +32,13 @@ public class BatchModel {
 
     public void setCompanyname(String companyname) {
         this.companyname = companyname;
+    }
+
+    public int getHasScanCount() {
+        return hasScanCount;
+    }
+
+    public void setHasScanCount(int hasScanCount) {
+        this.hasScanCount = hasScanCount;
     }
 }

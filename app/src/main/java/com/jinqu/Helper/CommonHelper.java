@@ -4,18 +4,28 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.daimajia.numberprogressbar.NumberProgressBar;
+import com.xxx.kyojujor.myuhfapplication.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 
 
 public class CommonHelper {
+
+
+
     //设置按钮是否可用
     public static void setButtonClickable(Button button, boolean flag) {
         button.setClickable(flag);
@@ -25,14 +35,6 @@ public class CommonHelper {
             button.setTextColor(Color.GRAY);
         }
     }
-
-//    public static String Api(String path) throws Exception {
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//            }
-//        }).start();
-//    }
 
     public static byte[] read(InputStream inStream) throws Exception {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -77,5 +79,19 @@ public class CommonHelper {
     public static void ToastByConnect(Context con)
     {
         ToastCommon("访问网络失败,请检查网络设置",con);
+    }
+
+    public static void ClearListView(ListView lve, List<?> data)
+    {
+        data.removeAll(data);
+        lve.setAdapter(null);
+    }
+
+    //清除进度有关
+    //otherCount 剩余未扫的数量
+    public void ClearProcess(int otherCount)
+    {
+//        npb.setProgress(0);
+//        npbtext.setText("0/"+otherCount);
     }
 }

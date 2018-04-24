@@ -2,15 +2,21 @@ package com.jinqu.BaseBackEvent;
 
 import android.app.Activity;
 import android.content.Context;
+import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.jinqu.Api.ApiComData;
 import com.jinqu.Helper.BaseCallBack;
 import com.jinqu.Helper.CommonHelper;
+import com.jinqu.Helper.OkHttpManager;
+import com.jinqu.kyojujor.myuhfapplication.MainActivity;
+import com.jinqu.model.EPCmodel;
 import com.xxx.kyojujor.myuhfapplication.R;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Request;
@@ -20,11 +26,19 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
 
     public String ApiUrl;
     public Context context;
+    public List<EPCmodel> mData;
+    public ListView lve;
+    public GetAllBatchCallBack successCallbackEvent;
+    public MainActivity mainActivity;
 
-    public SaveEpcCallbBack(Context con)
+    public SaveEpcCallbBack(Context con, List<EPCmodel> mData, ListView lve,GetAllBatchCallBack successCallbackEvent,MainActivity mainActivity)
     {
         context = con;
         ApiUrl = con.getString(R.string.url)+ ApiComData.InsertEpcByBatch;
+        this.mData = mData;
+        this.lve = lve;
+        this.successCallbackEvent = successCallbackEvent;
+        this.mainActivity = mainActivity;
     }
 
     @Override
@@ -45,15 +59,21 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
 //        return;
 
         LinkedTreeMap content = (LinkedTreeMap<String,Object>)t;
-        double ret = (double)content.get("code");
-        if(ret==Double.parseDouble("200"))
+        String ret = (String) content.get("code");
+        if(ret.equals("200"))
         {
             CommonHelper.ToastCommon("EPC数据保存成功",context);
-
+//            CommonHelper.ClearListView(lve,mData);
+//            new CommonHelper().ClearProcess(0);
+            mainActivity.ClearEpcListView();
+            //回调请求批次号,更新数据
+            OkHttpManager.getInstance().getRequest(successCallbackEvent.ApiUrl,
+                    successCallbackEvent);
         }
-        if(ret==Double.parseDouble("500"))
+        if(ret.equals("500"))
         {
-
+            String msg = (String) content.get("msg");
+            CommonHelper.ToastCommon("保存失败"+msg,context);
         }
     }
 

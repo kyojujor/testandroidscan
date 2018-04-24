@@ -13,6 +13,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.jinqu.Api.ApiComData;
 import com.jinqu.Helper.BaseCallBack;
 import com.jinqu.Helper.CommonHelper;
+import com.jinqu.kyojujor.myuhfapplication.MainActivity;
 import com.jinqu.model.BatchModel;
 import com.xxx.kyojujor.myuhfapplication.R;
 
@@ -42,7 +43,8 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
 
     @Override
     protected void onFailure(Call call, IOException e) {
-        CommonHelper.ToastByConnect(batchAdapter.mContext);
+
+//        CommonHelper.ToastByConnect(batchAdapter.mContext);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
         try
         {
               LinkedTreeMap content = (LinkedTreeMap<String,Object>)o;
-              if((double)content.get("code")==Double.parseDouble("200")) {
+              if(content.get("code").equals("200")) {
                   LinkedTreeMap dataT = (LinkedTreeMap) content.get("data");
                   ArrayList<LinkedTreeMap> data = (ArrayList<LinkedTreeMap>) dataT.get("data");
                   if(data!=null &&!data.isEmpty()&&data.size()>0)
@@ -61,7 +63,9 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
                       for (LinkedTreeMap item : data) {
                           BatchModel bitem = new BatchModel();
                           bitem.setBatch(item.get("batch").toString());
-//                          bitem.setNeedcount(Integer.parseInt(item.get("count").toString()));
+
+                          int haslabelcount = CommonHelper.GsonDoubleToInt((Double) item.get("haslabelcount"));
+                          bitem.setHasScanCount(haslabelcount);
 
                            int count = CommonHelper.GsonDoubleToInt((Double) item.get("count"));
                            bitem.setNeedcount(count);

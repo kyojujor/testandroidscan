@@ -293,7 +293,6 @@ public class OkHttpManager {
         FormBody.Builder builder = new FormBody.Builder();
         builder.add("platform", "android");
         builder.add("version", "1.0");
-        builder.add("key", "123456");
         if (params != null) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 builder.add(entry.getKey(), entry.getValue());

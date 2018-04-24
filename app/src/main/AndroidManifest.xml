@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="com.jinqu.kyojujor.myuhfapplication.MainActivity" >
+        <activity android:name="com.jinqu.kyojujor.myuhfapplication.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
