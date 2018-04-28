@@ -29,8 +29,9 @@ public class LabelAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
-        return null;
+    public EPCmodel getItem(int position) {
+
+        return mData.get(position);
     }
 
     @Override
@@ -41,15 +42,35 @@ public class LabelAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        Viewholder viewholder = null;
+
         if(convertView == null){
             convertView = LayoutInflater.from(mContext).inflate(R.layout.list_item,parent,false);
+            viewholder = new Viewholder();
+            viewholder.item_count = (TextView) convertView.findViewById(R.id.count);
+            viewholder.item_epcname = (TextView) convertView.findViewById(R.id.epcname);
+            convertView.setTag(viewholder);
+        }else {
+            viewholder = (Viewholder) convertView.getTag();
         }
 
-        TextView txt_epcname = (TextView) convertView.findViewById(R.id.epcname);
-        TextView txt_count = (TextView) convertView.findViewById(R.id.count);
+//        TextView txt_epcname = (TextView) convertView.findViewById(R.id.epcname);
+//        TextView txt_count = (TextView) convertView.findViewById(R.id.count);
+//
+//        txt_epcname.setText(mData.get(position).getEpc());
+//        txt_count.setText(mData.get(position).getCount()+"");
+        EPCmodel model =getItem(position);
+        viewholder.item_epcname.setText(model.getEpc());
+        viewholder.item_count.setText(model.getCount()+"");
 
-        txt_epcname.setText(mData.get(position).getEpc());
-        txt_count.setText(mData.get(position).getCount()+"");
         return convertView;
+    }
+
+
+
+    static  class Viewholder
+    {
+        TextView item_epcname;
+        TextView item_count;
     }
 }

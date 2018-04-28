@@ -15,6 +15,7 @@ import com.jinqu.Helper.BaseCallBack;
 import com.jinqu.Helper.CommonHelper;
 import com.jinqu.kyojujor.myuhfapplication.MainActivity;
 import com.jinqu.model.BatchModel;
+import com.jinqu.model.EPCmodel;
 import com.xxx.kyojujor.myuhfapplication.R;
 
 import java.io.IOException;
@@ -28,13 +29,13 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
 
     public String ApiUrl;
     protected BatchSpinnerAdapter batchAdapter;
-    protected Spinner spin;
+    protected MainActivity mainActivity;
 
-    public GetAllBatchCallBack(Context con, Spinner spin)
+    public GetAllBatchCallBack(Context con, MainActivity mainActivity)
     {
-        ApiUrl = con.getString(R.string.url)+ ApiComData.GetAllBatchcontent;
+        ApiUrl = con.getString(R.string.url)+ ApiComData.GetAllBatchcontent+"?status=0";
         batchAdapter = new BatchSpinnerAdapter(con);
-        this.spin = spin;
+        this.mainActivity = mainActivity;
     }
 
     @Override
@@ -49,6 +50,8 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
 
     @Override
     protected void onSuccess(Call call, Response response, T o) {
+
+        mainActivity.ClearEpcListView();
         if(o ==null)
         return;
 
@@ -75,7 +78,9 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
                       }
 
                       //组装spinner适配器
-                      spin.setAdapter(batchAdapter);
+//                      mainActivity.getC_spi_batch().removeAllViewsInLayout();
+                      mainActivity.getC_spi_batch().setAdapter(batchAdapter);
+//                      batchAdapter.spinbatchdata = new ArrayList<BatchModel>();
 //                      spin.setSelection(batchAdapter.getCount(),true);
                   }else
                   {
@@ -132,6 +137,7 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+
             if(convertView == null){
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.batchspinner,parent,false);
             }
@@ -145,5 +151,8 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
             txt_batchitem_company.setText(spinbatchdata.get(position).getCompanyname());
             return convertView;
         }
+
+
     }
+
 }

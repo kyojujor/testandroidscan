@@ -28,16 +28,14 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
     public Context context;
     public List<EPCmodel> mData;
     public ListView lve;
-    public GetAllBatchCallBack successCallbackEvent;
     public MainActivity mainActivity;
 
-    public SaveEpcCallbBack(Context con, List<EPCmodel> mData, ListView lve,GetAllBatchCallBack successCallbackEvent,MainActivity mainActivity)
+    public SaveEpcCallbBack(Context con, List<EPCmodel> mData, ListView lve,MainActivity mainActivity)
     {
         context = con;
         ApiUrl = con.getString(R.string.url)+ ApiComData.InsertEpcByBatch;
         this.mData = mData;
         this.lve = lve;
-        this.successCallbackEvent = successCallbackEvent;
         this.mainActivity = mainActivity;
     }
 
@@ -65,10 +63,10 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
             CommonHelper.ToastCommon("EPC数据保存成功",context);
 //            CommonHelper.ClearListView(lve,mData);
 //            new CommonHelper().ClearProcess(0);
-            mainActivity.ClearEpcListView();
             //回调请求批次号,更新数据
-            OkHttpManager.getInstance().getRequest(successCallbackEvent.ApiUrl,
-                    successCallbackEvent);
+            GetAllBatchCallBack event = mainActivity.GetSpinevent();
+            OkHttpManager.getInstance().getRequest(event.ApiUrl,
+                    event);
         }
         if(ret.equals("500"))
         {

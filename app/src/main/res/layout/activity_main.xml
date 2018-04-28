@@ -14,14 +14,20 @@
         <Button
             android:id="@+id/btn_power"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:text="打开电源"
             android:layout_width="wrap_content" />
 
         <Spinner
+            android:id="@+id/spin_category"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="2" />
+
+        <Spinner
             android:id="@+id/spin_batch"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:layout_width="wrap_content"
             android:spinnerMode="dialog"/>
     </LinearLayout>
@@ -29,20 +35,20 @@
         android:layout_width="match_parent"
         android:layout_height="15pt"
         android:orientation="horizontal">
+
         <com.daimajia.numberprogressbar.NumberProgressBar
             android:id="@+id/number_progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="10"
             android:layout_marginRight="40dp"
-            app:progress_text_size="20sp"
-            />
+            android:layout_weight="10"
+            app:progress_text_size="20sp" />
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/scancountview"
-            android:text="3/50000"/>
+            android:text="0/0"/>
     </LinearLayout>
 
     <ListView

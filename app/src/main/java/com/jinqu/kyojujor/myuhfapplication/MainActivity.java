@@ -1,14 +1,18 @@
 package com.jinqu.kyojujor.myuhfapplication;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.media.SoundPool;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -21,6 +25,7 @@ import com.daimajia.numberprogressbar.NumberProgressBar;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.jinqu.BaseBackEvent.GetAllBatchCallBack;
+import com.jinqu.BaseBackEvent.GetLabelTitleByBatchCallBack;
 import com.jinqu.BaseBackEvent.SaveEpcCallbBack;
 import com.jinqu.Helper.CommonHelper;
 import com.jinqu.Helper.OkHttpManager;
@@ -52,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private LabelAdapter mAdapter = null;
     private boolean runflag = true;
     private boolean startflag = false;
+    private static boolean isOpenLight = true;
 
 
     private Button c_btn_power;
@@ -67,15 +73,25 @@ public class MainActivity extends AppCompatActivity {
 
     private UhfReader reader; //超高频读写器
     private UhfReaderDevice readerDevice; // 读写器设备，抓哟操作读写器电源
+    private SoundPool soundPool;//todo 扫描到新标签则蜂鸣
 
     //标志位,标志批次选择号是否被第一次选择
     private boolean oneBatchSelectFlag = false;
-    private GetAllBatchCallBack<LinkedTreeMap> spinevent;
 
+    @SuppressLint("StaticFieldLeak")
     private static MainActivity mainActivity;
+
+    public String GetBeSelectedBatchId()
+    {
+        return beSelectedBatch.getBatch();
+    }
 
     public MainActivity() {
         mainActivity = this;
+    }
+
+    public Spinner getC_spi_batch() {
+        return c_spi_batch;
     }
 
     public static MainActivity getMainActivity() {
@@ -86,16 +102,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        keepScreenLongLight(this);
 
         initView();
         initReader();
-//
 
-
-//        GetAllBatchCallBack<LinkedTreeMap> event = new GetAllBatchCallBack<>(getApplicationContext(), c_spi_batch);
-        OkHttpManager.getInstance().getRequest(spinevent.ApiUrl,
-                spinevent);
+        GetAllBatchCallBack event = GetSpinevent();
+        OkHttpManager.getInstance().getRequest(event.ApiUrl,
+                event);
     }
 
     /**
@@ -120,12 +134,17 @@ public class MainActivity extends AppCompatActivity {
 
         c_epc_list = findViewById(R.id.epc_list);
         c_npb = findViewById(R.id.number_progress_bar);
-        c_scancountview =findViewById(R.id.scancountview);
+        c_scancountview = findViewById(R.id.scancountview);
 
         mContext = MainActivity.this;
         mData = new ArrayList<>();
 
-        spinevent = new GetAllBatchCallBack<>(getApplicationContext(), c_spi_batch);
+//        beSelectedBatch = new BatchModel();
+
+    }
+
+    public GetAllBatchCallBack<?> GetSpinevent() {
+        return new GetAllBatchCallBack<>(getApplicationContext(), mainActivity);
     }
 
     //初始化读写器及读写器电源
@@ -245,9 +264,9 @@ public class MainActivity extends AppCompatActivity {
                     //list中不存在此epc
                     mData.add(new EPCmodel(epc_code, 1));
                     c_npb.setProgress(mData.size());
-                    int temp = beSelectedBatch.getNeedcount()-beSelectedBatch.getHasScanCount();
+                    int temp = beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount();
 
-                    c_scancountview.setText(mData.size()+"/"+temp);
+                    c_scancountview.setText(mData.size() + "/" + temp);
                 }
                 mAdapter = new LabelAdapter(mData, mContext);
                 c_epc_list.setAdapter(mAdapter);
@@ -262,7 +281,9 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.btn_power:
-                    runflag = true;
+//                    GetLabelTitleByBatchCallBack<LinkedTreeMap> event = new GetLabelTitleByBatchCallBack(getMainActivity());
+//                    OkHttpManager.getInstance().getRequest(event.ApiUrl,
+//                            event);
                     CommonHelper.ToastCommon("打开电源", getApplicationContext());
                     break;
                 case R.id.btn_startScan:
@@ -361,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
 //                tv_text.setText(items[which]);
                 if (which == 0)//确定保存
                 {
-                    SaveEpcCallbBack<LinkedTreeMap> event = new SaveEpcCallbBack<>(getApplicationContext(), mData, c_epc_list, spinevent,getMainActivity());
+                    SaveEpcCallbBack<LinkedTreeMap> event = new SaveEpcCallbBack<>(getApplicationContext(), mData, c_epc_list, getMainActivity());
 
                     Map<String, String> postlist = new HashMap<>();
 
@@ -390,19 +411,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        builder.create();
+//        builder.create();
         builder.create().show();
     }
 
     //清除列表里面所有的item
     public void ClearEpcListView() {
         CommonHelper.ClearListView(c_epc_list, mData);
-        if (beSelectedBatch != null && beSelectedBatch.getBatch().length() > 0)
-        {
-            int temp= beSelectedBatch.getNeedcount()-beSelectedBatch.getHasScanCount();
-            c_npb.setMax(beSelectedBatch.getNeedcount()-beSelectedBatch.getHasScanCount());
-            c_scancountview.setText("0/"+temp);
+        mData.removeAll(mData);
+        if (beSelectedBatch != null && beSelectedBatch.getBatch().length() > 0) {
+            int temp = beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount();
+            c_npb.setMax(beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount());
+            c_scancountview.setText("0/" + temp);
         }
     }
+
+    /**
+     * 是否使屏幕常亮
+     *
+     * @param activity
+     */
+    public static void keepScreenLongLight(Activity activity) {
+        Window window = activity.getWindow();
+        if (isOpenLight) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+
+    }
+
 
 }

@@ -50,7 +50,7 @@ public class CommonHelper {
     //仅仅为了gson转int问题而写
     public static int GsonDoubleToInt(double d) {
         String s1 = String.valueOf(d);
-        String s2 = s1.substring(0, s1.indexOf(".")) + s1.substring(s1.indexOf(".") + 1);
+        String s2 = s1.substring(0, s1.indexOf("."));
         return Integer.parseInt(s2);
     }
 
