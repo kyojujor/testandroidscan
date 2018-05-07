@@ -16,7 +16,9 @@ import com.jinqu.model.EPCmodel;
 import com.xxx.kyojujor.myuhfapplication.R;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Request;
@@ -46,7 +48,7 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
 
     @Override
     protected void onFailure(Call call, IOException e) {
-        CommonHelper.ToastByConnect(context);
+        mainActivity.UItoastByNoConnect();
     }
 
     @Override
@@ -66,12 +68,12 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
             //回调请求批次号,更新数据
             GetAllBatchCallBack event = mainActivity.GetSpinevent();
             OkHttpManager.getInstance().getRequest(event.ApiUrl,
-                    event);
+                    event,null);
         }
         if(ret.equals("500"))
         {
             String msg = (String) content.get("msg");
-            CommonHelper.ToastCommon("保存失败"+msg,context);
+            CommonHelper.ToastCommon("保存失败 "+msg,context);
         }
     }
 
@@ -82,7 +84,7 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
 
     @Override
     protected void onEror(Call call, int statusCode, Exception e) {
-        CommonHelper.ToastByConnect(context);
+        mainActivity.UItoastByNoConnect();
     }
 
     @Override

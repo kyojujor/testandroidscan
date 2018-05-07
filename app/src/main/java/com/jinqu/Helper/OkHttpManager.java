@@ -58,8 +58,30 @@ public class OkHttpManager {
      * 对外公布的可调方法
      ************************/
 
-    public void getRequest(String url, final BaseCallBack callBack) {
-        Request request = buildRequest(url, null, HttpMethodType.GET);
+    public void getRequest(String url, final BaseCallBack callBack,Map<String, String> params) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(url);
+        if(params!=null && params.size()>0)
+        {
+            if(url.contains("?")) {
+                //如果不在最后一位
+                if(sb.indexOf("?") != sb.length()-1) {
+                    sb.append("&");
+                }
+            }else {
+                sb.append("?");
+            }
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                sb.append(entry.getKey())
+                        .append("=")
+                        .append(entry.getValue())
+                        .append("&");
+            }
+            if(sb.indexOf("&") != -1) {
+                sb.deleteCharAt(sb.lastIndexOf("&"));
+            }
+        }
+        Request request = buildRequest(new String(sb), null, HttpMethodType.GET);
         doRequest(request, callBack);
     }
 

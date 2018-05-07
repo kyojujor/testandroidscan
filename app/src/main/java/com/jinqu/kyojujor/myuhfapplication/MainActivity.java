@@ -5,16 +5,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.SoundPool;
+import android.support.annotation.UiThread;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -25,12 +29,13 @@ import com.daimajia.numberprogressbar.NumberProgressBar;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.jinqu.BaseBackEvent.GetAllBatchCallBack;
-import com.jinqu.BaseBackEvent.GetLabelTitleByBatchCallBack;
+import com.jinqu.BaseBackEvent.GetSetRatioCountByBatchCallBack;
 import com.jinqu.BaseBackEvent.SaveEpcCallbBack;
 import com.jinqu.Helper.CommonHelper;
 import com.jinqu.Helper.OkHttpManager;
 import com.jinqu.model.BatchModel;
 import com.jinqu.model.EPCmodel;
+import com.jinqu.model.RatioBatchModel;
 import com.magicrf.uhfreaderlib.reader.Tools;
 import com.magicrf.uhfreaderlib.reader.UhfReader;
 import com.wang.avi.AVLoadingIndicatorView;
@@ -50,9 +55,12 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static android.media.AudioManager.STREAM_MUSIC;
+
 public class MainActivity extends AppCompatActivity {
 
     private List<EPCmodel> mData = null;
+    private List<RatioBatchModel> ratioData = null;
     private Context mContext;
     private LabelAdapter mAdapter = null;
     private boolean runflag = true;
@@ -66,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
     private Button c_btn_save;
     private ListView c_epc_list;
     private Spinner c_spi_batch;
+    private Spinner c_spi_cate;//保存类别
     private BatchModel beSelectedBatch;
+    private RatioBatchModel beratioBatchModel;
     private AVLoadingIndicatorView c_avi;
     private NumberProgressBar c_npb;//进度条
     private TextView c_scancountview;//进度条具体数据
@@ -74,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private UhfReader reader; //超高频读写器
     private UhfReaderDevice readerDevice; // 读写器设备，抓哟操作读写器电源
     private SoundPool soundPool;//todo 扫描到新标签则蜂鸣
+    private int soundID;
 
     //标志位,标志批次选择号是否被第一次选择
     private boolean oneBatchSelectFlag = false;
@@ -81,8 +92,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     private static MainActivity mainActivity;
 
-    public String GetBeSelectedBatchId()
-    {
+    public String GetBeSelectedBatchId() {
         return beSelectedBatch.getBatch();
     }
 
@@ -92,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
 
     public Spinner getC_spi_batch() {
         return c_spi_batch;
+    }
+
+    public Spinner getC_spi_cate() {
+        return c_spi_cate;
     }
 
     public static MainActivity getMainActivity() {
@@ -109,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         GetAllBatchCallBack event = GetSpinevent();
         OkHttpManager.getInstance().getRequest(event.ApiUrl,
-                event);
+                event, null);
     }
 
     /**
@@ -131,6 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
         c_spi_batch = findViewById(R.id.spin_batch);
         c_spi_batch.setOnItemSelectedListener(sid);
+        //种类
+        c_spi_cate = findViewById(R.id.spin_category);
+        c_spi_cate.setOnItemSelectedListener(sid);
+
 
         c_epc_list = findViewById(R.id.epc_list);
         c_npb = findViewById(R.id.number_progress_bar);
@@ -138,9 +156,24 @@ public class MainActivity extends AppCompatActivity {
 
         mContext = MainActivity.this;
         mData = new ArrayList<>();
+        ratioData = new ArrayList<>();
 
 //        beSelectedBatch = new BatchModel();
+        //加载声音
+        soundPool = new SoundPool(5, STREAM_MUSIC, 0);
+        soundID = soundPool.load(this, R.raw.msg, 1);
 
+
+    }
+
+    private void loadSound() {
+        AudioManager am = (AudioManager) this
+                .getSystemService(Context.AUDIO_SERVICE);
+        float audioMaxVolumn = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        float volumnCurrent = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        float volumnRatio = volumnCurrent / audioMaxVolumn;
+
+        soundPool.play(soundID, volumnRatio, volumnRatio, 1, 0, 1);
     }
 
     public GetAllBatchCallBack<?> GetSpinevent() {
@@ -180,14 +213,21 @@ public class MainActivity extends AppCompatActivity {
         thread.start();
     }
 
+    public void setRatioData(RatioBatchModel ratioDataItem) {
+        if (ratioData != null)
+            this.ratioData.add(ratioDataItem);
+    }
+
+    public List<RatioBatchModel> getRatioData() {
+        return this.ratioData;
+    }
+
 
     /**
      * 盘存线程
      */
     class InventoryThread extends Thread {
-
         private List<byte[]> epcList;
-
         @Override
         public void run() {
             super.run();
@@ -195,10 +235,8 @@ public class MainActivity extends AppCompatActivity {
             while (runflag)
                 if (startflag) {
                     {
-                        Log.v("xxx", "aaabvbb");
                         epcList = reader.inventoryRealTime(); //实时盘存
                         if (epcList != null && !epcList.isEmpty()) {
-                            Log.v("zzz", "epclist.size=" + epcList.size());
                             for (byte[] epc : epcList) {
                                 if (epc != null) {
                                     String epcStr = Tools.Bytes2HexString(epc, epc.length);
@@ -261,12 +299,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if (!flag) {
+
+                    //声音播放
+                    loadSound();
+
                     //list中不存在此epc
                     mData.add(new EPCmodel(epc_code, 1));
-                    c_npb.setProgress(mData.size());
-                    int temp = beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount();
-
-                    c_scancountview.setText(mData.size() + "/" + temp);
+                    setallProgress(mData.size());
                 }
                 mAdapter = new LabelAdapter(mData, mContext);
                 c_epc_list.setAdapter(mAdapter);
@@ -282,6 +321,9 @@ public class MainActivity extends AppCompatActivity {
             switch (v.getId()) {
                 case R.id.btn_power:
 //                    GetLabelTitleByBatchCallBack<LinkedTreeMap> event = new GetLabelTitleByBatchCallBack(getMainActivity());
+//                    OkHttpManager.getInstance().getRequest(event.ApiUrl,
+//                            event);
+//                    GetSetRatioCountByBatchCallBack<LinkedTreeMap> event = new GetSetRatioCountByBatchCallBack(getMainActivity());
 //                    OkHttpManager.getInstance().getRequest(event.ApiUrl,
 //                            event);
                     CommonHelper.ToastCommon("打开电源", getApplicationContext());
@@ -333,18 +375,24 @@ public class MainActivity extends AppCompatActivity {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             switch (parent.getId()) {
                 case R.id.spin_batch:
-//                    beSelectedBatch = ((TextView)view.findViewById(R.id.batchitem_name))
-//                            .getText().toString();
-//                    if(oneBatchSelectFlag) {
                     beSelectedBatch = (BatchModel) parent.getAdapter().getItem(position);
-
                     //清除所有进度数据以及列表
-                    ClearEpcListView();
+                    ClearRatioSpinner();
 
+                    GetSetRatioCountByBatchCallBack<LinkedTreeMap> event = new GetSetRatioCountByBatchCallBack<>(getMainActivity());
+                    Map<String, String> map = new HashMap<>();
+                    map.put("batch", beSelectedBatch.getBatch());
+                    OkHttpManager.getInstance().getRequest(event.ApiUrl,
+                            event, map);
                     CommonHelper.ToastCommon("已选择批次号" + beSelectedBatch.getBatch(), getApplication());
-//                    }
-//                    oneBatchSelectFlag  = true;
+                    break;
+                case R.id.spin_category:
+                    beratioBatchModel = (RatioBatchModel) parent.getAdapter().getItem(position);
+                    CommonHelper.ToastCommon("已选择 " + beratioBatchModel.getName(), getApplication());
+                    break;
             }
+            setallProgress(0);
+            ClearEpcListView();
         }
 
         @Override
@@ -353,11 +401,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private void SaveEpcDialog() {
         String[] items = new String[]{"保存EPC", "取消"};
 
+        if (beSelectedBatch == null) {
+            CommonHelper.ToastCommon("请选择批次号", getApplicationContext());
+            return;
+        }
+
+        if (beratioBatchModel == null) {
+            CommonHelper.ToastCommon("请选择保存类别", getApplicationContext());
+            return;
+        }
+
         int finalCount = 0;//最后还需扫描数量
-        finalCount = beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount() - mData.size();
+        finalCount = beratioBatchModel.getOthercount() - mData.size();
 
         if (finalCount < 0) {
             CommonHelper.ToastCommon("扫描数量超过剩余数量,请清空列表重新扫描", getApplicationContext());
@@ -368,8 +427,8 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
 
 
-        String title = MessageFormat.format("本次扫描数:{0},本次扫描后还需扫描数:{1},是否保存?",
-                mData.size(), finalCount
+        String title = MessageFormat.format("本次扫描数:{0},还需扫描数:{1},保存类别:{2} 是否保存?",
+                mData.size(), finalCount, beratioBatchModel.getName()
         );
         builder.setTitle(title); //设置标题
         //builder.setMessage("是否确认退出?"); //设置内容
@@ -403,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
                         postlist.put("EPC", epcstr);
                         postlist.put("batch", beSelectedBatch.getBatch());
                         postlist.put("operation_id", CommonHelper.labelOp.INCB.value() + "");
-
+                        postlist.put("cate", beratioBatchModel.getCate_id() + "");
 
                         OkHttpManager.getInstance().postRequest(event.ApiUrl,
                                 event, postlist);
@@ -419,10 +478,18 @@ public class MainActivity extends AppCompatActivity {
     public void ClearEpcListView() {
         CommonHelper.ClearListView(c_epc_list, mData);
         mData.removeAll(mData);
-        if (beSelectedBatch != null && beSelectedBatch.getBatch().length() > 0) {
-            int temp = beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount();
-            c_npb.setMax(beSelectedBatch.getNeedcount() - beSelectedBatch.getHasScanCount());
-            c_scancountview.setText("0/" + temp);
+        setallProgress(0);
+//        }
+    }
+
+    //设置进度条
+    public void setallProgress(int number) {
+        c_npb.setProgress(number);
+        if (beratioBatchModel != null) {
+            c_npb.setMax(beratioBatchModel.getOthercount());
+            c_scancountview.setText(number + "/" + beratioBatchModel.getOthercount());
+        } else {
+            c_scancountview.setText(number + "/" + 0);
         }
     }
 
@@ -439,6 +506,41 @@ public class MainActivity extends AppCompatActivity {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
+    }
+
+    public void ClearRatioSpinner() {
+        if (ratioData != null) {
+            ratioData.removeAll(ratioData);
+        }
+        if (beratioBatchModel != null) {
+            beratioBatchModel = null;
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                c_spi_cate.setAdapter(null);
+            }
+        });
+    }
+
+    public void UItoastByNoConnect()
+    {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                CommonHelper.ToastCommon("访问网络失败,请检查网络设置",getApplicationContext());
+            }
+        });
+    }
+
+    public void UItoast(final String str)
+    {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                CommonHelper.ToastCommon(str,getApplicationContext());
+            }
+        });
     }
 
 

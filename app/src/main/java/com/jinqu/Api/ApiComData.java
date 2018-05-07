@@ -9,4 +9,5 @@ public class ApiComData {
     public  static String GetAllBatchcontent = "/rent/OrderCom/orderList";
     public  static String InsertEpcByBatch = "/rent/label/insertEPC";
     public  static String GetLabelByBatch = "/rent/Ordercom/GetLabelByBatch";
+    public  static String GetSetRatioByBatch = "/rent/Ordercom/GetCountByBatch";
 }

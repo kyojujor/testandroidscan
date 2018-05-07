@@ -45,7 +45,7 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
     @Override
     protected void onFailure(Call call, IOException e) {
 
-//        CommonHelper.ToastByConnect(batchAdapter.mContext);
+        mainActivity.UItoastByNoConnect();
     }
 
     @Override

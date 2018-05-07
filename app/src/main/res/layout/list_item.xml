@@ -12,7 +12,6 @@
         <!--android:baselineAlignBottom="true"-->
         <!--android:paddingLeft="8dp" />-->
 
-    <!-- 定义一个竖直方向的LinearLayout,把QQ呢称与说说的文本框设置出来 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
