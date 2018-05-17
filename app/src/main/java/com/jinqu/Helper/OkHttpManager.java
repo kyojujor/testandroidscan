@@ -38,6 +38,7 @@ public class OkHttpManager {
 
     private Handler handler;
 
+
     private OkHttpManager() {
         mOkHttpClient = new OkHttpClient();
         mOkHttpClient.newBuilder().connectTimeout(10, TimeUnit.SECONDS).readTimeout(10, TimeUnit.SECONDS)

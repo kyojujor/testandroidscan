@@ -1,10 +1,7 @@
 package com.jinqu.BaseBackEvent;
 
-import android.app.Activity;
 import android.content.Context;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.jinqu.Api.ApiComData;
@@ -67,8 +64,10 @@ public class SaveEpcCallbBack<T> extends BaseCallBack<T> {
 //            new CommonHelper().ClearProcess(0);
             //回调请求批次号,更新数据
             GetAllBatchCallBack event = mainActivity.GetSpinevent();
+            Map<String,String> map = new HashMap<>();
+            map.put("rotcode",mainActivity.getAndroidcode());
             OkHttpManager.getInstance().getRequest(event.ApiUrl,
-                    event,null);
+                    event,map);
         }
         if(ret.equals("500"))
         {

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.provider.Settings;
 import android.support.annotation.UiThread;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -85,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
     private UhfReaderDevice readerDevice; // 读写器设备，抓哟操作读写器电源
     private SoundPool soundPool;//todo 扫描到新标签则蜂鸣
     private int soundID;
+    private String androidcode;//唯一标识码,每次请求都带
+
 
     //标志位,标志批次选择号是否被第一次选择
     private boolean oneBatchSelectFlag = false;
@@ -122,8 +125,11 @@ public class MainActivity extends AppCompatActivity {
         initReader();
 
         GetAllBatchCallBack event = GetSpinevent();
+        Map<String,String> map = new HashMap<>();
+        map.put("rotcode",androidcode);
         OkHttpManager.getInstance().getRequest(event.ApiUrl,
-                event, null);
+                event, map);
+
     }
 
     /**
@@ -163,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         soundPool = new SoundPool(5, STREAM_MUSIC, 0);
         soundID = soundPool.load(this, R.raw.msg, 1);
 
-
+        androidcode = Settings.System.getString(getContentResolver(), Settings.System.ANDROID_ID);
     }
 
     private void loadSound() {
@@ -203,10 +209,10 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         //获取用户设置功率,并设置
-        SharedPreferences shared = getSharedPreferences("power", 0);
-        int value = shared.getInt("value", 26);
-        Log.d("", "value" + value);
-        reader.setOutputPower(value);
+//        SharedPreferences shared = getSharedPreferences("power", 0);
+//        int value = shared.getInt("value", 26);
+//        Log.d("", "value" + value);
+        reader.setOutputPower(13);
 
         Log.d("debugOnCreate", "all init");
         Thread thread = new InventoryThread();
@@ -220,6 +226,10 @@ public class MainActivity extends AppCompatActivity {
 
     public List<RatioBatchModel> getRatioData() {
         return this.ratioData;
+    }
+
+    public String getAndroidcode() {
+        return androidcode;
     }
 
 
@@ -382,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
                     GetSetRatioCountByBatchCallBack<LinkedTreeMap> event = new GetSetRatioCountByBatchCallBack<>(getMainActivity());
                     Map<String, String> map = new HashMap<>();
                     map.put("batch", beSelectedBatch.getBatch());
+                    map.put("rotcode",androidcode);
                     OkHttpManager.getInstance().getRequest(event.ApiUrl,
                             event, map);
                     CommonHelper.ToastCommon("已选择批次号" + beSelectedBatch.getBatch(), getApplication());
@@ -463,6 +474,7 @@ public class MainActivity extends AppCompatActivity {
                         postlist.put("batch", beSelectedBatch.getBatch());
                         postlist.put("operation_id", CommonHelper.labelOp.INCB.value() + "");
                         postlist.put("cate", beratioBatchModel.getCate_id() + "");
+                        postlist.put("rotcode",androidcode);
 
                         OkHttpManager.getInstance().postRequest(event.ApiUrl,
                                 event, postlist);
