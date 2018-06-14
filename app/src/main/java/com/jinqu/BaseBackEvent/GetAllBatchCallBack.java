@@ -33,7 +33,7 @@ public class GetAllBatchCallBack<T> extends BaseCallBack<T> {
 
     public GetAllBatchCallBack(Context con, MainActivity mainActivity)
     {
-        ApiUrl = con.getString(R.string.url)+ ApiComData.GetAllBatchcontent+"?status=0";
+        ApiUrl = con.getString(R.string.url)+ ApiComData.GetAllBatchcontent+"?status=0&num=100";
         batchAdapter = new BatchSpinnerAdapter(con);
         this.mainActivity = mainActivity;
     }
